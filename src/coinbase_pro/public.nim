@@ -39,37 +39,28 @@ proc getData*[T](self; args: seq[string]): Future[T] {.async.} =
     echo getCurrentExceptionMsg()
     echo getCurrentException().getStackTrace()
 
-proc getProducts*(self): Future[seq[Product]] {.async.} =
-  return await self.getData[:seq[Product]](@["products"])
+template mkCallP0(path: string, name: untyped, respType: typedesc) =
+  proc name*(self: Coinbase): Future[respType] {.async.} =
+    return await self.getData[:respType](@[path])
 
-proc getProduct*(self; product: string): Future[Product] {.async.} =
-  return await self.getData[:Product](@["products", product])
+template mkCallP2(path: string, name: untyped, arg: untyped; path2: string, respType: typedesc) =
+  proc name*(self: Coinbase, arg: string): Future[respType] {.async.} =
+    return await self.getData[:respType](@[path, arg, path2])
 
-proc getBookLevel*(bookLevel: typedesc[L1 | L2 | L3]): int =
-  when bookLevel is L1: 1
-  elif bookLevel is L2: 2
-  elif bookLevel is L3: 3
+mkCallP0("products", getProducts, seq[Product])
+mkCallP2("products", getProduct, product, "", Product)
+mkCallP2("products", getTicker, product, "ticker", Ticker)
+mkCallP2("products", getTrades, product, "trades", seq[Trade])
+mkCallP2("products", getCandles, product, "candles", seq[Candle])
+mkCallP2("products", getStats, product, "stats", Stats)
+mkCallP0("currencies", getCurrencies, seq[Currency])
+mkCallP2("currencies", getCurrency, currency, "", Currency)
+mkCallP0("time", getTime, TimeResp)
+
+proc level(_: typedesc[L1]): int = 1
+proc level(_: typedesc[L2]): int = 2
+proc level(_: typedesc[L3]): int = 1
 
 proc getBook*(self; product: string, bookLevel: typedesc[L1 | L2 | L3]): Future[Book[bookLevel]] {.async.} =
-  return await self.getData[:Book[bookLevel]](@["products", product, "book?level=" & $getBookLevel(bookLevel)])
+  return await self.getData[:Book[bookLevel]](@["products", product, "book?level=" & $level(bookLevel)])
 
-proc getTicker*(self; product:string): Future[Ticker] {.async.} =
-  return await self.getData[:Ticker](@["products", product, "ticker"])
-
-proc getTrades*(self; product:string): Future[seq[Trade]] {.async.} =
-  return await self.getData[:seq[Trade]](@["products", product, "trades"])
-
-proc getCandles*(self; product:string): Future[seq[Candle]] {.async.} =
-  return await self.getData[:seq[Candle]](@["products", product, "candles"])
-
-proc getStats*(self; product:string): Future[Stats] {.async.} =
-  return await self.getData[:Stats](@["products", product, "stats"])
-
-proc getCurrencies*(self): Future[seq[Currency]] {.async.} =
-  return await self.getData[:seq[Currency]](@["currencies"])
-
-proc getCurrency*(self; currency: string): Future[Currency] {.async.} =
-  return await self.getData[:Currency](@["currencies", currency])
-
-proc getTime*(self): Future[TimeResp] {.async.} =
-  return await self.getData[:TimeResp](@["time"])

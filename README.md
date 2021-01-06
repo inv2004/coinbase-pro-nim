@@ -3,7 +3,8 @@
 ## Api
 
 ### Sync
-  Async in Nim has very little overhead, all you need is just ``import asyncdispatch`` and ``waitFor`` before any async call. That is why specific sync API is not necessary
+
+  Async in Nim has very little overhead, all you need is just to ``import asyncdispatch`` and ``waitFor`` before any async call. That is why specific sync API is not necessary
 
 ### ASync
 - [x] getProduct(s)

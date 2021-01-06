@@ -15,6 +15,8 @@ import std/[json,jsonutils]
 import decimal
 import uuids
 
+const defProd = "BTC-USD"
+
 var logger = newConsoleLogger()
 addHandler(logger)
 setLogFilter(lvlError)
@@ -28,7 +30,7 @@ test "extra_keys":
 test "getTime":
   let cb = newCoinbase()
   let time = waitFor cb.getTime()
-  check time.iso - getTime() <= initDuration(seconds = 5)
+  check gettime() - time.iso <= initDuration(seconds = 5)
 
 test "getProduct(s)":
   let cb = newCoinbase()
@@ -46,12 +48,17 @@ test "getCurrenc(y|ies)":
 
 test "getBook":
   let cb = newCoinbase()
-  let bookL1 = waitFor cb.getBook("BTC-USD", L1)
+  let bookL1 = waitFor cb.getBook(defProd, L1)
   check bookL1.bids.len == 1
   check bookL1.asks.len == 1
-  let bookL2 = waitFor cb.getBook("BTC-USD", L2)
+  let bookL2 = waitFor cb.getBook(defProd, L2)
   check bookL2.bids.len == 50
   check bookL2.asks.len == 50
-  let bookL3 = waitFor cb.getBook("BTC-USD", L3)
-  check bookL3.bids.len > 50
-  check bookL3.asks.len > 50
+  # let bookL3 = waitFor cb.getBook(defProd, L3)
+  # check bookL3.bids.len > 50
+  # check bookL3.asks.len > 50
+
+test "getTicker":
+  let cb = newCoinbase()
+  let tick = waitFor cb.getTicker(defProd)
+  check getTime() - tick.time <= initDuration(minutes = 60)

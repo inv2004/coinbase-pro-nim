@@ -41,3 +41,14 @@ type
     sequence*: int64
     bids*: seq[T]
     asks*: seq[T]
+
+  Ticker* = object
+    trade_id*: int64
+    price*, size*, bid*, ask*, volume*: DecimalType
+    time*: Time
+
+  Trade* = object
+    time*: string
+    trade_id*: int
+    price*, size*: DecimalType
+    side*: string

@@ -14,6 +14,8 @@ import strutils
 
 const url = "https://api-public.sandbox.pro.coinbase.com"
 
+const jParseOptions = Joptions(allowExtraKeys: true, allowMissingKeys: true)
+
 type
   Coinbase* = object
     http*: AsyncHttpClient
@@ -31,26 +33,17 @@ proc getData*[T](self; args: seq[string]): Future[T] {.async.} =
   let res = await self.http.getContent(url & "/" & pStr)
   let json = parseJson(res)
   debug json.pretty()
-  # try:
-  fromJson(result, json, Joptions(allowExtraKeys: true, allowMissingKeys: true))
-  # except:
-    # echo getCurrentExceptionMsg()
-    # echo getCurrentException().getStackTrace()
-
-proc getTime*(self): Future[TimeResp] {.async.} =
-  return await self.getData[:TimeResp](@["time"])
+  try:
+    fromJson(result, json, jParseOptions)
+  except:
+    echo getCurrentExceptionMsg()
+    echo getCurrentException().getStackTrace()
 
 proc getProducts*(self): Future[seq[Product]] {.async.} =
   return await self.getData[:seq[Product]](@["products"])
 
 proc getProduct*(self; product: string): Future[Product] {.async.} =
   return await self.getData[:Product](@["products", product])
-
-proc getCurrencies*(self): Future[seq[Currency]] {.async.} =
-  return await self.getData[:seq[Currency]](@["currencies"])
-
-proc getCurrency*(self; currency: string): Future[Currency] {.async.} =
-  return await self.getData[:Currency](@["currencies", currency])
 
 proc getBookLevel*(bookLevel: typedesc[L1 | L2 | L3]): int =
   when bookLevel is L1: 1
@@ -68,3 +61,15 @@ proc getTrades*(self; product:string): Future[seq[Trade]] {.async.} =
 
 proc getCandles*(self; product:string): Future[seq[Candle]] {.async.} =
   return await self.getData[:seq[Candle]](@["products", product, "candles"])
+
+proc getStats*(self; product:string): Future[Stats] {.async.} =
+  return await self.getData[:Stats](@["products", product, "stats"])
+
+proc getCurrencies*(self): Future[seq[Currency]] {.async.} =
+  return await self.getData[:seq[Currency]](@["currencies"])
+
+proc getCurrency*(self; currency: string): Future[Currency] {.async.} =
+  return await self.getData[:Currency](@["currencies", currency])
+
+proc getTime*(self): Future[TimeResp] {.async.} =
+  return await self.getData[:TimeResp](@["time"])

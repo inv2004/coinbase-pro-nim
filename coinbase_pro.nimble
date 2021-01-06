@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.0"
+version       = "0.1.1"
 author        = "inv2004"
 description   = "Coinbase pro client for Nim"
 license       = "MIT"

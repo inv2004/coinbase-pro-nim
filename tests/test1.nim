@@ -20,16 +20,11 @@ var logger = newConsoleLogger()
 addHandler(logger)
 setLogFilter(lvlError)
 
-test "extra_keys":
+test "extraKeys":
   let j = parseJson "[{\"id\":\"BAT-USDC\",\"base_currency\":\"BAT\",\"quote_currency\":\"USDC\",\"base_min_size\":\"1\",\"base_max_size\":\"300000\",\"quote_increment\":\"0.000001\",\"base_increment\":\"0.000001\",\"display_name\":\"BAT/USDC\",\"min_market_funds\":\"1\",\"max_market_funds\":\"100000\",\"margin_enabled\":false,\"post_only\":false,\"limit_only\":false,\"cancel_only\":false,\"trading_disabled\":false,\"status\":\"online\",\"status_message\":\"\"}]"
   var p: seq[Product]
   fromJson(p, j, Joptions(allowExtraKeys: true, allowMissingKeys: true))
   check p[0].id == "BAT-USDC"
-
-test "getTime":
-  let cb = newCoinbase()
-  let time = waitFor cb.getTime()
-  check gettime() - time.iso <= initDuration(seconds = 5)
 
 test "getProduct(s)":
   let cb = newCoinbase()
@@ -37,13 +32,6 @@ test "getProduct(s)":
   check prds.len > 5
   let p = waitFor cb.getProduct(prds[0].id)
   check p == prds[0]
-
-test "getCurrenc(y|ies)":
-  let cb = newCoinbase()
-  let currs = waitFor cb.getCurrencies()
-  check currs.len > 5
-  let c = waitFor cb.getCurrency(currs[0].id)
-  check c == currs[0]
 
 test "getBook":
   let cb = newCoinbase()
@@ -65,7 +53,6 @@ test "getTicker":
 
 test "getTrades":
   let cb = newCoinbase()
-  # setLogFilter(lvlDebug)
   let trades = waitFor cb.getTrades(defProd)
   check trades.len > 0
   check trades[0].trade_id > 0
@@ -74,12 +61,31 @@ test "getTrades":
   check trades[0].side in {Buy, Sell}
   check getTime() - trades[0].time <= initDuration(minutes = 60)
 
-# import sequtils
+import sequtils
 
-# test "getCandles":
-#   let cb = newCoinbase()
-#   let candles = waitFor cb.getCandles(defProd)
-#   check candles.len > 0
-#   check candles.allIt(it.time < getTime())
-#   check candles[0].close > 0.0
-#   check candles[0].volume > 0.0
+test "getCandles":
+  let cb = newCoinbase()
+  let candles = waitFor cb.getCandles(defProd)
+  check candles.len > 0
+  check candles.allIt(it.time < getTime())
+  check candles[0].close > 0.0
+  check candles[0].volume > 0.0
+
+test "getStats":
+  let cb = newCoinbase()
+  let stats = waitFor cb.getStats(defProd)
+  check stats.volume_30day > 0
+
+test "getTime":
+  let cb = newCoinbase()
+  let time = waitFor cb.getTime()
+  check gettime() - time.iso <= initDuration(seconds = 5)
+
+test "getCurrenc(y|ies)":
+  let cb = newCoinbase()
+  let currs = waitFor cb.getCurrencies()
+  check currs.len > 5
+  let c = waitFor cb.getCurrency(currs[0].id)
+  check c == currs[0]
+  check c.details.`type` in {Crypto, Fiat}
+  check c.details.max_withdrawal_amount > 0

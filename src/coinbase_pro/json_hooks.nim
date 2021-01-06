@@ -56,7 +56,6 @@ proc fromJsonHook*(x: var Candle, j: JsonNode) =
   x.volume = j[5].getFloat
 
 import unittest
-# when
 
 test "fixTimeStr":
   var t1 = "2021-01-06T18:01:24Z"

@@ -12,16 +12,6 @@ type
     id*, display_name*, base_currency*, quote_currency*: string
     base_increment*, base_min_size*, base_max_size*, quote_increment*: DecimalType
 
-  CurrencyStatus* = enum
-    Online = "online"
-
-  Currency* = object
-    id*, name*: string
-    min_size*: DecimalType
-    status*: CurrencyStatus
-    max_precision*: DecimalType
-    message*: string
-
   L1* = object
     price*: DecimalType
     size*: DecimalType
@@ -59,3 +49,31 @@ type
     time*: Time
     low*, high*, open*, close*, volume*: float64
   
+  Stats* = object
+    open*, high*, low*, volume*, last*, volume_30day*: DecimalType
+
+  CurrencyStatus* = enum
+    Online = "online"
+
+  CurrencyType* = enum Crypto = "crypto", Fiat = "fiat"
+
+  CurrencyDetails* = object
+    `type`*: CurrencyType
+    symbol*: string
+    network_confirmations*: int
+    sort_order*: int
+    crypto_address_link*: string
+    crypto_transaction_link*: string
+    push_payment_methods*: seq[string]
+    group_types*: seq[string]
+    display_name*: string
+    processing_time_seconds*, min_withdrawal_amount*, max_withdrawal_amount*: int64
+
+  Currency* = object
+    id*, name*: string
+    min_size*: DecimalType
+    status*: CurrencyStatus
+    max_precision*: DecimalType
+    message*: string
+    details*: CurrencyDetails
+

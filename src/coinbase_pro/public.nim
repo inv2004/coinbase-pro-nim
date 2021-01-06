@@ -12,32 +12,34 @@ import std/[json,jsonutils]
 import logging
 import strutils
 
-const url = "https://api-public.sandbox.pro.coinbase.com"
+const REAL* = "https://api.pro.coinbase.com"
+const SANDBOX* = "https://api-public.sandbox.pro.coinbase.com"
 
-const jParseOptions = Joptions(allowExtraKeys: true, allowMissingKeys: true)
+const JPARSEOPTIONS = Joptions(allowExtraKeys: true, allowMissingKeys: true)
 
 type
   Coinbase* = object
-    http*: AsyncHttpClient
+    http: AsyncHttpClient
+    url: string
     ws*: WebSocket
 
 using
   self: Coinbase
 
-proc newCoinbase*(): Coinbase =
+proc newCoinbase*(url = SANDBOX): Coinbase =
   let http = newAsyncHttpClient()
-  Coinbase(http: http)
+  Coinbase(http: http, url: url)
 
 proc getData*[T](self; args: seq[string]): Future[T] {.async.} =
   let pStr = args.join("/")
-  let res = await self.http.getContent(url & "/" & pStr)
+  let res = await self.http.getContent(self.url & "/" & pStr)
   let json = parseJson(res)
   debug json.pretty()
-  try:
-    fromJson(result, json, jParseOptions)
-  except:
-    echo getCurrentExceptionMsg()
-    echo getCurrentException().getStackTrace()
+  # try:
+  fromJson(result, json, JPARSEOPTIONS)
+  # except:
+  #   echo getCurrentExceptionMsg()
+  #   echo getCurrentException().getStackTrace()
 
 template mkCallP0(path: string, name: untyped, respType: typedesc) =
   proc name*(self: Coinbase): Future[respType] {.async.} =
@@ -63,4 +65,3 @@ proc level(_: typedesc[L3]): int = 1
 
 proc getBook*(self; product: string, bookLevel: typedesc[L1 | L2 | L3]): Future[Book[bookLevel]] {.async.} =
   return await self.getData[:Book[bookLevel]](@["products", product, "book?level=" & $level(bookLevel)])
-

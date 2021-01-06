@@ -67,7 +67,8 @@ type
     push_payment_methods*: seq[string]
     group_types*: seq[string]
     display_name*: string
-    processing_time_seconds*, min_withdrawal_amount*, max_withdrawal_amount*: int64
+    processing_time_seconds*: int64
+    min_withdrawal_amount*, max_withdrawal_amount*: float64
 
   Currency* = object
     id*, name*: string

@@ -53,12 +53,9 @@ proc getCurrency*(self; currency: string): Future[Currency] {.async.} =
   return await self.getData[:Currency](@["currencies", currency])
 
 proc getBookLevel*(bookLevel: typedesc[L1 | L2 | L3]): int =
-  when bookLevel is L1:
-    1
-  elif bookLevel is L2:
-    2
-  elif bookLevel is L3:
-    3
+  when bookLevel is L1: 1
+  elif bookLevel is L2: 2
+  elif bookLevel is L3: 3
 
 proc getBook*(self; product: string, bookLevel: typedesc[L1 | L2 | L3]): Future[Book[bookLevel]] {.async.} =
   return await self.getData[:Book[bookLevel]](@["products", product, "book?level=" & $getBookLevel(bookLevel)])

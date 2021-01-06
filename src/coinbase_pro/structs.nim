@@ -1,5 +1,7 @@
 
 import times
+import decimal
+import uuids
 
 type
   TimeResp* = object
@@ -7,35 +9,35 @@ type
     epoch*: float
 
   Product* = object
-    id*, base_currency*, quote_currency*: string
-    base_min_size*, base_max_size*, quote_increment*: string
+    id*, display_name*, base_currency*, quote_currency*: string
+    base_increment*, base_min_size*, base_max_size*, quote_increment*: DecimalType
 
   CurrencyStatus* = enum
     Online = "online"
 
   Currency* = object
     id*, name*: string
-    min_size*: string
+    min_size*: DecimalType
     status*: CurrencyStatus
-    max_precision: string
+    max_precision*: DecimalType
+    message*: string
 
-  L1* = tuple
-    price: string
-    size: string
-    num_orders: int
+  L1* = object
+    price*: DecimalType
+    size*: DecimalType
+    num_orders*: int
 
-  L2* = tuple
-    price: string
-    size: string
-    num_orders: int
+  L2* = object
+    price*: DecimalType
+    size*: DecimalType
+    num_orders*: int
 
-  L3* = tuple
-    price: string
-    size: string
-    order_id: string
+  L3* = object
+    price*: DecimalType
+    size*: DecimalType
+    order_id*: UUID
 
-  Book*[T] = object
+  Book*[T: L1 | L2 | L3] = object
     sequence*: int64
-    bids: seq[T]
-    asks: seq[T]
-  
+    bids*: seq[T]
+    asks*: seq[T]

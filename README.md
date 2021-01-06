@@ -1,1 +1,1 @@
-# coinbase_pro_nim
+# Coinbase pro client for Nim

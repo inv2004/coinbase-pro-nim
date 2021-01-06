@@ -11,3 +11,5 @@ srcDir        = "src"
 
 requires "nim >= 1.4.2"
 requires "ws"
+requires "decimal"
+requires "uuids"

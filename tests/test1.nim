@@ -5,16 +5,25 @@
 #
 # To run these tests, simply execute `nimble test`.
 
-import coinbase_pro/public
+import coinbase_pro
 
 import unittest
 import asyncdispatch
 import times
 import logging
+import std/[json,jsonutils]
+import decimal
+import uuids
 
 var logger = newConsoleLogger()
 addHandler(logger)
 setLogFilter(lvlError)
+
+test "extra_keys":
+  let j = parseJson "[{\"id\":\"BAT-USDC\",\"base_currency\":\"BAT\",\"quote_currency\":\"USDC\",\"base_min_size\":\"1\",\"base_max_size\":\"300000\",\"quote_increment\":\"0.000001\",\"base_increment\":\"0.000001\",\"display_name\":\"BAT/USDC\",\"min_market_funds\":\"1\",\"max_market_funds\":\"100000\",\"margin_enabled\":false,\"post_only\":false,\"limit_only\":false,\"cancel_only\":false,\"trading_disabled\":false,\"status\":\"online\",\"status_message\":\"\"}]"
+  var p: seq[Product]
+  fromJson(p, j, Joptions(allowExtraKeys: true, allowMissingKeys: true))
+  check p[0].id == "BAT-USDC"
 
 test "getTime":
   let cb = newCoinbase()
@@ -38,4 +47,11 @@ test "getCurrenc(y|ies)":
 test "getBook":
   let cb = newCoinbase()
   let bookL1 = waitFor cb.getBook("BTC-USD", L1)
-  echo bookL1
+  check bookL1.bids.len == 1
+  check bookL1.asks.len == 1
+  let bookL2 = waitFor cb.getBook("BTC-USD", L2)
+  check bookL2.bids.len == 50
+  check bookL2.asks.len == 50
+  let bookL3 = waitFor cb.getBook("BTC-USD", L3)
+  check bookL3.bids.len > 50
+  check bookL3.asks.len > 50

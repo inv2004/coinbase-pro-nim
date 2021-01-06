@@ -13,7 +13,6 @@ import times
 import logging
 import std/[json,jsonutils]
 import decimal
-import uuids
 
 const defProd = "BTC-USD"
 
@@ -57,8 +56,30 @@ test "getBook":
   # let bookL3 = waitFor cb.getBook(defProd, L3)
   # check bookL3.bids.len > 50
   # check bookL3.asks.len > 50
+  # check bookL3.bids[0].price < bookL3.asks[0].price
 
 test "getTicker":
   let cb = newCoinbase()
   let tick = waitFor cb.getTicker(defProd)
   check getTime() - tick.time <= initDuration(minutes = 60)
+
+test "getTrades":
+  let cb = newCoinbase()
+  # setLogFilter(lvlDebug)
+  let trades = waitFor cb.getTrades(defProd)
+  check trades.len > 0
+  check trades[0].trade_id > 0
+  check trades[0].price > 0
+  check trades[0].size > 0
+  check trades[0].side in {Buy, Sell}
+  check getTime() - trades[0].time <= initDuration(minutes = 60)
+
+# import sequtils
+
+# test "getCandles":
+#   let cb = newCoinbase()
+#   let candles = waitFor cb.getCandles(defProd)
+#   check candles.len > 0
+#   check candles.allIt(it.time < getTime())
+#   check candles[0].close > 0.0
+#   check candles[0].volume > 0.0

@@ -47,8 +47,15 @@ type
     price*, size*, bid*, ask*, volume*: DecimalType
     time*: Time
 
+  TradeSide* = enum Buy = "buy", Sell = "sell"
+
   Trade* = object
-    time*: string
+    time*: Time
     trade_id*: int
     price*, size*: DecimalType
-    side*: string
+    side*: TradeSide
+
+  Candle* = object
+    time*: Time
+    low*, high*, open*, close*, volume*: float64
+  

@@ -62,3 +62,9 @@ proc getBook*(self; product: string, bookLevel: typedesc[L1 | L2 | L3]): Future[
 
 proc getTicker*(self; product:string): Future[Ticker] {.async.} =
   return await self.getData[:Ticker](@["products", product, "ticker"])
+
+proc getTrades*(self; product:string): Future[seq[Trade]] {.async.} =
+  return await self.getData[:seq[Trade]](@["products", product, "trades"])
+
+proc getCandles*(self; product:string): Future[seq[Candle]] {.async.} =
+  return await self.getData[:seq[Candle]](@["products", product, "candles"])

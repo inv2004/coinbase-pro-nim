@@ -5,7 +5,7 @@ It was made in 3 evenings. Coinbase-pro-rs was made ?in a few months?, or course
 
 The only stoppers here were:
 - Nim's jsonutils bug and their fix (easy) https://github.com/nim-lang/Nim/pull/16615 and https://github.com/nim-lang/Nim/pull/16612
-- Nim's kind objects cannot have the same field-names for different branches.
+- Nim's kind objects cannot have the same field-names for different branches - it is a problem to make marshalling very easy
 
 ## Api
 

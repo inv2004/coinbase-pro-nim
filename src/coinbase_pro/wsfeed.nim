@@ -14,14 +14,6 @@ const WS_SANDBOX* = "wss://ws-feed-public.sandbox.pro.coinbase.com"
 const JPARSEOPTIONS = Joptions(allowExtraKeys: true, allowMissingKeys: true)
 
 type
-  ChannelType* = enum
-    ctHeartbeat = "heartbeat"
-    ctTicker = "ticker"
-    ctLevel2 = "level2"
-    ctMatches = "matches"
-    ctFull = "full"
-    ctUser = "user"
-
   # Channel = object
   #   name: ChannelType
   #   product_ids: seq[string]
@@ -52,25 +44,14 @@ proc subscribe*(self; channels: seq[ChannelType], products: seq[string]): Future
 
   result.ws = self.ws
 
-proc fromJsonHook*(x: var FeedMessage, j: JsonNode) =
-  let kind = j["type"].jsonTo(FeedMessageKind)
-  case kind
-  of fkHeartbeat, fkTicker:
-    fromJson(x, j)
-  of fkReceived, fkOpen, fkMatch, fkDone:
-    var full: FullMessage
-    fromJson(full, j)
-  else:
-    echo "else"
-
 iterator items*(sub: Subscription): FeedMessage =
   var msg: string
   var res: FeedMessage
   while sub.ws.readyState == Open:
     msg = waitFor sub.ws.receiveStrPacket()
     let j = parseJson(msg)
-    if j["type"]
-    fromJson(res, parseJson(msg), JPARSEOPTIONS)
+    # echo j
+    fromJson(res, j, JPARSEOPTIONS)
     yield res
 
 iterator pairs*(sub: Subscription): (int, FeedMessage) =

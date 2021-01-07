@@ -90,11 +90,53 @@ test "extraKeys":
 #   check c.details.`type` in {Crypto, Fiat}
 #   check c.details.max_withdrawal_amount > 0
 
-test "subscribe":
+test "subscribeHeartbeat":
   let cb = newCoinbase()
-  let subs = waitFor cb.subscribe(@[ctHeartbeat, ctTicker, ctFull], @[defProd])
+  let subs = waitFor cb.subscribe(@[ctHeartbeat], @[defProd])
   for i, x in subs:
-    echo x
-    if i >= 10:
+    check x.`type` == fkHeartbeat
+    check x.channelType == ctHeartbeat
+    check x.time - getTime() <= initDuration(seconds = 2)
+    check x.last_trade_id > 0
+    if i >= 1:
       break
 
+test "subscribeStatus":
+  let cb = newCoinbase()
+  let subs = waitFor cb.subscribe(@[ctStatus], @[defProd])
+  for i, x in subs:
+    check x.`type` == fkStatus
+    check x.products.len > 0
+    check x.currencies.len > 0
+    break
+
+test "subscribeTicker":
+  let cb = newCoinbase()
+  let subs = waitFor cb.subscribe(@[ctHeartbeat, ctTicker], @[defProd])
+  var i = 0
+  for x in subs:
+    if x.`type` == fkTicker:
+      check x.time - getTime() <= initDuration(seconds = 2)
+      check x.best_bid < x.best_ask
+      check x.price > 0
+      check x.last_size > 0
+      i.inc()
+      if i >= 2:
+        break
+
+test "subscribeLevel2":
+  let cb = newCoinbase()
+  let subs = waitFor cb.subscribe(@[ctHeartbeat, ctLevel2], @[defProd])
+  var i = 0
+  for x in subs:
+    if x.`type` == fkSnapshot:
+      check x.bids[0][0] < x.asks[0][0]
+      check x.bids.len > 0
+      check x.asks.len > 0
+      i.inc()
+    if i == 1 and x.`type` == fkL2Update:
+      check x.changes.len > 0
+      check x.changes[0][0] in {Buy, Sell}
+      check x.changes[0][1] > 0
+      check x.changes[0][2] > 0
+      break

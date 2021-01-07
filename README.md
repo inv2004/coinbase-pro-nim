@@ -1,11 +1,11 @@
 # Coinbase pro client for Nim
 
 It is just experiment to compare effort of making the same like [coinbase-pro-rs](https://github.com/inv2004/coinbase-pro-rs) but on Nim.
-It was made in 3 evenings. Coinbase-pro-rs was made ?in a few months?, or course rs version is a bit more polished (not so much) + has private API (I have neved used). But the version supports decimal numbers and ``status`` channel.
+It was made in 3 evenings. Coinbase-pro-rs was made ?in a few months?, or course rs version is a bit more polished + has private API (I have never used). But the version supports decimal numbers and ``status`` channel.
 
 The only stoppers here were:
 - Nim's jsonutils bug and their fix (easy) https://github.com/nim-lang/Nim/pull/16615 and https://github.com/nim-lang/Nim/pull/16612
-- Nim's kind objects cannot have the same field-names for different branches - it is a problem to make marshalling very easy
+- Nim's kind objects cannot have the same field-names for different branches - it is a problem to make marshalling easier: https://github.com/nim-lang/RFCs/issues/19
 
 ## Api
 

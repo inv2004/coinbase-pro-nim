@@ -7,6 +7,7 @@ export wsstructs
 import asyncdispatch
 import ws
 import std/[json, jsonutils]
+import strutils
 
 const WS_REAL* = "wss://ws-feed.pro.coinbase.com"
 const WS_SANDBOX* = "wss://ws-feed-public.sandbox.pro.coinbase.com"
@@ -44,15 +45,33 @@ proc subscribe*(self; channels: seq[ChannelType], products: seq[string]): Future
 
   result.ws = self.ws
 
+proc processMsg(j: JsonNode): FeedMessage =
+  # echo j
+  let t = j["type"].getStr
+  if t in ["received", "open", "match", "done"]:
+    var msg: FullMessage
+    fromJson(msg, j, JPARSEOPTIONS)
+    result.`type` = ctFull
+    result.fullMsg = msg
+
+    j.delete("type")
+    fromJson(result, j, JPARSEOPTIONS)
+  elif t in ["snapshot", "l2update"]:
+    var msg: L2Message
+    fromJson(msg, j, JPARSEOPTIONS)
+    result.`type` = ctLevel2
+    result.l2Msg = msg
+
+    j.delete("type")
+    fromJson(result, j, JPARSEOPTIONS)
+  else:
+    fromJson(result, j, JPARSEOPTIONS)
+
 iterator items*(sub: Subscription): FeedMessage =
   var msg: string
-  var res: FeedMessage
   while sub.ws.readyState == Open:
     msg = waitFor sub.ws.receiveStrPacket()
-    let j = parseJson(msg)
-    # echo j
-    fromJson(res, j, JPARSEOPTIONS)
-    yield res
+    yield processMsg(parseJson(msg))
 
 iterator pairs*(sub: Subscription): (int, FeedMessage) =
   var i = 0

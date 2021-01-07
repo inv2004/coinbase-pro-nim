@@ -1,7 +1,9 @@
-from structs import TradeSide, CurrencyStatus
+from structs import TradeSide, CurrencyStatus, OrderType
 
 import times
 import decimal
+import uuids
+import options
 
 type
   ChannelType* = enum
@@ -9,22 +11,8 @@ type
     ctStatus = "status"
     ctTicker = "ticker"
     ctLevel2 = "level2"
-    ctMatches = "matches"
     ctFull = "full"
     ctUser = "user"
-
-  FeedMessageKind* = enum
-    fkHeartbeat = "heartbeat"
-    fkStatus = "status"
-    fkTicker = "ticker"
-    fkSnapshot = "snapshot"
-    fkL2Update = "l2update"
-    fkMatches = "matches"
-    # fkSubscribe = "subscribe"
-    fkReceived = "received"
-    fkOpen = "open" 
-    fkMatch = "match"
-    fkDone = "done"
 
   ProductStatusInfo* = object
     id*: string
@@ -53,44 +41,65 @@ type
     convertible_to*: seq[string]
     # "details": {}
 
+  L2MessageKind* = enum
+    l2mkSnapshot = "snapshot"
+    l2mkUpdate = "l2update"
+
+  L2Message* = object
+    case `type`*: L2MessageKind
+    of l2mkSnapshot:
+      bids*, asks*: seq[(DecimalType, DecimalType)]
+    of l2mkUpdate:
+      changes*: seq[(TradeSide, DecimalType, DecimalType)]
+
+  FullMessageKind* = enum
+    fmkReceived = "received"
+    fmkOpen = "open"
+    fmkMatch = "match"
+    fmkChange = "change"
+    fmkDone = "done"
+
+  DoneReason = enum Filled = "filled", Canceled = "canceled"
+
+  FullMessage* = object
+    order_id*: Uuid
+    size*: Option[DecimalType]
+    price*: DecimalType
+    side*: TradeSide
+    funds*: Option[DecimalType]
+    remaining_size*: Option[DecimalType]
+    case `type`*: FullMessageKind
+    of fmkReceived:
+      order_type*: OrderType
+    of fmkOpen:
+      discard
+    of fmkMatch:
+      maker_order_id*, taker_order_id*: Uuid
+    of fmkChange:
+      new_size*, old_size*: DecimalType
+      new_funds*, old_funds*: DecimalType
+    of fmkDone:
+      reason*: DoneReason
+
   FeedMessage* = object
     sequence*: int64
     time*: Time   # not available for fkSnapshot
     product_id*: string
-    case `type`*: FeedMessageKind
-    of fkHeartbeat:
+    case `type`*: ChannelType
+    of ctHeartbeat:
       last_trade_id*: int64
-    of fkStatus:
+    of ctStatus:
       products*: seq[ProductStatusInfo]
       currencies*: seq[CurrencyStatusInfo]
-    of fkTicker:
+    of ctTicker:
       trade_id*: int64
       price*: DecimalType
       side*: TradeSide
       last_size*: DecimalType
       best_bid*, best_ask*: DecimalType
-    of fkSnapshot:
-      bids*, asks*: seq[(DecimalType, DecimalType)]
-    of fkL2Update:
-      changes*: seq[(TradeSide, DecimalType, DecimalType)]
-    of fkMatches:
+    of ctLevel2:
+      l2Msg*: L2Message
+    of ctFull:
+      fullMsg*: FullMessage
+    of ctUser:
       discard
-    # of fkSubscribe:
-    #   discard
-    of fkReceived:
-      discard
-    of fkOpen:
-      discard
-    of fkMatch:
-      discard
-    of fkDone:
-      discard
-
-proc channelType*(msg: FeedMessage): ChannelType =
-  let t = msg.`type`
-  if t in {fkHeartbeat}: ctHeartbeat
-  elif t in {fkStatus}: ctStatus
-  elif t in {fkTicker}: ctTicker
-  elif t in {fkSnapshot, fkL2Update}: ctLevel2
-  elif t in {fkReceived, fkOpen, fkMatch, fkDone}: ctFull
-  else: raise newException(ValueError, "cannot detect type: " & $t)

@@ -37,6 +37,8 @@ type
     price*, size*, bid*, ask*, volume*: DecimalType
     time*: Time
 
+  OrderType* = enum Limit = "limit", Market = "market"
+
   TradeSide* = enum Buy = "buy", Sell = "sell"
 
   Trade* = object

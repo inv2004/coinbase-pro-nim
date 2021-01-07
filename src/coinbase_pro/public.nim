@@ -1,34 +1,24 @@
+
+
 import structs
 export structs
 
-import json_hooks
-export json_hooks
+import jhooks
+export jhooks
+
+import base
+export base
 
 import asyncdispatch
 import httpclient
-import ws
-import strformat
 import std/[json,jsonutils]
-import logging
 import strutils
-
-const REAL* = "https://api.pro.coinbase.com"
-const SANDBOX* = "https://api-public.sandbox.pro.coinbase.com"
+import logging
 
 const JPARSEOPTIONS = Joptions(allowExtraKeys: true, allowMissingKeys: true)
 
-type
-  Coinbase* = object
-    http: AsyncHttpClient
-    url: string
-    ws*: WebSocket
-
 using
   self: Coinbase
-
-proc newCoinbase*(url = SANDBOX): Coinbase =
-  let http = newAsyncHttpClient()
-  Coinbase(http: http, url: url)
 
 proc getData*[T](self; args: seq[string]): Future[T] {.async.} =
   let pStr = args.join("/")

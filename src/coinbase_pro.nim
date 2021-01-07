@@ -6,5 +6,5 @@
 #   ## Adds two files together.
 #   return x + y
 
-import coinbase_pro/public
-export public
+import coinbase_pro/wsfeed
+export wsfeed

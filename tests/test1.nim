@@ -26,66 +26,75 @@ test "extraKeys":
   fromJson(p, j, Joptions(allowExtraKeys: true, allowMissingKeys: true))
   check p[0].id == "BAT-USDC"
 
-test "getProduct(s)":
-  let cb = newCoinbase()
-  let prds = waitFor cb.getProducts()
-  check prds.len > 5
-  let p = waitFor cb.getProduct(prds[0].id)
-  check p == prds[0]
+# test "getProduct(s)":
+#   let cb = newCoinbase()
+#   let prds = waitFor cb.getProducts()
+#   check prds.len > 5
+#   let p = waitFor cb.getProduct(prds[0].id)
+#   check p == prds[0]
 
-test "getBook":
-  let cb = newCoinbase()
-  let bookL1 = waitFor cb.getBook(defProd, L1)
-  check bookL1.bids.len == 1
-  check bookL1.asks.len == 1
-  let bookL2 = waitFor cb.getBook(defProd, L2)
-  check bookL2.bids.len == 50
-  check bookL2.asks.len == 50
-  # let bookL3 = waitFor cb.getBook(defProd, L3)
-  # check bookL3.bids.len > 50
-  # check bookL3.asks.len > 50
-  # check bookL3.bids[0].price < bookL3.asks[0].price
+# test "getBook":
+#   let cb = newCoinbase()
+#   let bookL1 = waitFor cb.getBook(defProd, L1)
+#   check bookL1.bids.len == 1
+#   check bookL1.asks.len == 1
+#   let bookL2 = waitFor cb.getBook(defProd, L2)
+#   check bookL2.bids.len == 50
+#   check bookL2.asks.len == 50
+#   # let bookL3 = waitFor cb.getBook(defProd, L3)
+#   # check bookL3.bids.len > 50
+#   # check bookL3.asks.len > 50
+#   # check bookL3.bids[0].price < bookL3.asks[0].price
 
-test "getTicker":
-  let cb = newCoinbase()
-  let tick = waitFor cb.getTicker(defProd)
-  check getTime() - tick.time <= initDuration(minutes = 60)
+# test "getTicker":
+#   let cb = newCoinbase()
+#   let tick = waitFor cb.getTicker(defProd)
+#   check getTime() - tick.time <= initDuration(minutes = 60)
 
-test "getTrades":
-  let cb = newCoinbase()
-  let trades = waitFor cb.getTrades(defProd)
-  check trades.len > 0
-  check trades[0].trade_id > 0
-  check trades[0].price > 0
-  check trades[0].size > 0
-  check trades[0].side in {Buy, Sell}
-  check getTime() - trades[0].time <= initDuration(minutes = 60)
+# test "getTrades":
+#   let cb = newCoinbase()
+#   let trades = waitFor cb.getTrades(defProd)
+#   check trades.len > 0
+#   check trades[0].trade_id > 0
+#   check trades[0].price > 0
+#   check trades[0].size > 0
+#   check trades[0].side in {Buy, Sell}
+#   check getTime() - trades[0].time <= initDuration(minutes = 60)
 
-import sequtils
+# import sequtils
 
-test "getCandles":
-  let cb = newCoinbase()
-  let candles = waitFor cb.getCandles(defProd)
-  check candles.len > 0
-  check candles.allIt(it.time < getTime())
-  check candles[0].close > 0.0
-  check candles[0].volume > 0.0
+# test "getCandles":
+#   let cb = newCoinbase()
+#   let candles = waitFor cb.getCandles(defProd)
+#   check candles.len > 0
+#   check candles.allIt(it.time < getTime())
+#   check candles[0].close > 0.0
+#   check candles[0].volume > 0.0
 
-test "getStats":
-  let cb = newCoinbase()
-  let stats = waitFor cb.getStats(defProd)
-  check stats.volume_30day > 0
+# test "getStats":
+#   let cb = newCoinbase()
+#   let stats = waitFor cb.getStats(defProd)
+#   check stats.volume_30day > 0
 
-test "getTime":
-  let cb = newCoinbase()
-  let time = waitFor cb.getTime()
-  check gettime() - time.iso <= initDuration(seconds = 5)
+# test "getTime":
+#   let cb = newCoinbase()
+#   let time = waitFor cb.getTime()
+#   check gettime() - time.iso <= initDuration(seconds = 5)
 
-test "getCurrenc(y|ies)":
+# test "getCurrenc(y|ies)":
+#   let cb = newCoinbase()
+#   let currs = waitFor cb.getCurrencies()
+#   check currs.len > 5
+#   let c = waitFor cb.getCurrency(currs[0].id)
+#   check c == currs[0]
+#   check c.details.`type` in {Crypto, Fiat}
+#   check c.details.max_withdrawal_amount > 0
+
+test "subscribe":
   let cb = newCoinbase()
-  let currs = waitFor cb.getCurrencies()
-  check currs.len > 5
-  let c = waitFor cb.getCurrency(currs[0].id)
-  check c == currs[0]
-  check c.details.`type` in {Crypto, Fiat}
-  check c.details.max_withdrawal_amount > 0
+  let subs = waitFor cb.subscribe(@[ctHeartbeat, ctTicker, ctFull], @[defProd])
+  for i, x in subs:
+    echo x
+    if i >= 10:
+      break
+
